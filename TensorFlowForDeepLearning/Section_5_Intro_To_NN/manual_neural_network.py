@@ -26,6 +26,11 @@ Created on Sat Oct 13 11:57:38 2018
 
 #To traverse the graph, we'll use PostOrder Tree Traversal
 
+
+#Using our classes, let's create a Classification Regression model
+#First create the activation function using the sigmoid function
+import numpy as np
+
 class Operation():
     
     def __init__(self, input_nodes=[]):
@@ -68,6 +73,13 @@ class matmul(Operation):
         self.inputs = [x, y]
         return x.dot(y)
         
+class Sigmoid(Operation):
+    def __init__(self, z):
+        super().__init__([z])
+        
+    def compute(self, z):
+        return 1 / (1 + np.exp(-z))
+        
 
 class PlaceHolder():
     
@@ -104,7 +116,7 @@ def traverse_postorder(operation):
         if isinstance(node, Operation):
             for input_node in node.input_nodes:
                 recurse(input_node)
-            nodes_postorder.append(node)
+        nodes_postorder.append(node)
         
     recurse(operation)
     return nodes_postorder
