@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 
+import sklearn.model_selection as ms
 #Let's create a large data set 
 
 x_data = np.linspace(0.0, 10.0, 1000000)
@@ -89,3 +90,56 @@ with tf.Session() as sess:
     
     my_data.sample(250).plot(kind='scatter', x='X Data', y='Y')
     plt.plot(x_data, y_hat, 'r')
+
+
+#Now let's solve the same thing but using the tf.estimator API 
+#We have a LinearClassifier, LinearRegressor, DNNClassifier, DNNRegressor (DNN - Densely Connected NN)
+
+#To use this we must do the following
+
+#Define a list of feature columns
+feat_cols = [tf.feature_column.numeric_column('x', shape=[1])]
+
+#Create the Estimator Model
+estimator = tf.estimator.LinearRegressor(feature_columns=feat_cols)
+
+
+#Train Test Split with sklearn
+x_train, x_eval, y_train, y_eval = ms.train_test_split(x_data, y_true, test_size=0.3, random_state=101)
+
+#Create a Data Input Function
+input_func = tf.estimator.inputs.numpy_input_fn({'x': x_train}, y_train, batch_size=8, num_epochs=None, shuffle=True)
+
+#Create Train Input Function
+train_input_func = tf.estimator.inputs.numpy_input_fn({'x': x_train}, y_train, batch_size=8, num_epochs=1000, shuffle=False)
+
+#Create Eval Input Function
+eval_input_func = tf.estimator.inputs.numpy_input_fn({'x': x_eval}, y_eval, batch_size=8, num_epochs=1000, shuffle=False)
+
+#Call train, evaulate, and predict methods on estimator object
+estimator.train(input_fn=input_func, steps=1000)
+
+#Let's get the training metrics
+train_metrics = estimator.evaluate(input_fn=train_input_func, steps=1000)
+eval_metrics = estimator.evaluate(input_fn=eval_input_func, steps=1000)
+
+print('TRAINING DATA METRICS')
+print(train_metrics)
+
+print('TEST SET METRICS')
+print(eval_metrics)
+
+
+#Now let's predict with our model
+new_points = np.linspace(0, 10, 10)
+input_fn_predict = tf.estimator.inputs.numpy_input_fn({'x': new_points}, shuffle=False)
+pred_list = list(estimator.predict(input_fn=input_fn_predict))
+predictions = []
+
+for pred in pred_list:
+    predictions.append(pred['predictions'])
+    
+print(predictions)
+
+my_data.sample(n=250).plot(kind='scatter', x='X Data', y='Y')
+plt.plot(new_points, predictions, 'r*')
