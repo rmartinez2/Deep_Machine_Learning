@@ -98,7 +98,7 @@ embedded_group_col = tf.feature_column.embedding_column(assigned_group, dimensio
 #Now we must replace the categorical features with the embeded categorical features
 feat_cols = [num_preg, plasma_gluc, dias_press, tricep, insulin, bmi, diabetes_pedigree, embedded_group_col, age_bucket]
 
-input_func = tf.estimator.inputs.pands_input_fn(X_train, y_train, batch_size=10, num_epochs=1000, shuffle=True)
+input_func = tf.estimator.inputs.pandas_input_fn(X_train, y_train, batch_size=10, num_epochs=1000, shuffle=True)
 dnn_model = tf.estimator.DNNClassifier(hidden_units=[10, 10, 10], feature_columns=feat_cols, n_classes=2)
 dnn_model.train(input_fn=input_func, steps=1000)
 
